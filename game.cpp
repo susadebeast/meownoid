@@ -374,6 +374,7 @@ void Game::RemoveEntity(Entity *entity)
 	entity->anim_time = 0;
 	entity->attack_time = 0;
 	entity->walk_frame = 0;
+	entity->renderlayer = 0;
 }
 
 // could also add a SpawnMissile/Bullet code separate from spawning other entities
@@ -398,6 +399,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setFillColor(sf::Color::White);
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_STARS;
 
 			entity->health = 1;
 			entity->speed = 2.0f + rand() % 4 + (rand() % 3) * 0.1f;
@@ -415,6 +417,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setFillColor(sf::Color::Red);
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_PLAYER;
 
 			entity->health = 1;
 			entity->speed = 0;
@@ -430,6 +433,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setFillColor(sf::Color::Red);
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_ENEMIES;
 
 			entity->health = 3 + rand() % 2 + rand()%(1+plr.laserlevel);
 			entity->speed = 4.0f + rand()%2;
@@ -452,6 +456,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setFillColor(sf::Color::Red);
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_ENEMIES;
 
 			entity->health = 2 + rand() % 2 + rand()%(1+plr.laserlevel);
 			entity->speed = 2.0f + rand() % 2;
@@ -475,6 +480,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setFillColor(sf::Color::Red);
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_ENEMIES;
 
 			entity->health = 6 + rand() % 3 + rand()%(1+plr.laserlevel);
 			entity->speed = 2.0f + rand() % 2;
@@ -499,6 +505,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setFillColor(sf::Color::Red);
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_ENEMIES;
 
 			entity->health = 4 + rand() % 2 + rand()%(1+plr.laserlevel);
 			entity->speed = 3.0f + rand() % 3;
@@ -522,6 +529,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setFillColor(sf::Color::Red);
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_ENEMIES;
 
 			entity->health = 1 + rand() % 2 + rand()%(1+plr.laserlevel);
 			entity->speed = 1.0f + rand() % 2;
@@ -549,6 +557,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setPosition(entity->pos);
 			entity->spr.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_EFFECTS;
 
 			entity->speed = 15.0f;
 			entity->health = 1;
@@ -566,6 +575,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setPosition(entity->pos);
 			entity->spr.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_EFFECTS;
 
 			entity->speed = 15.0f;
 			entity->health = 1;
@@ -586,6 +596,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
 			entity->owner = attackthing;
+			entity->renderlayer = RL_EFFECTS;
 
 			entity->speed = 5.0f;
 			entity->health = 1;
@@ -611,6 +622,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
 			entity->owner = attackthing;
+			entity->renderlayer = RL_EFFECTS;
 
 			entity->speed = 15.0f;
 			entity->health = 1;
@@ -627,6 +639,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setFillColor(sf::Color::Yellow);
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_ENEMIES;
 
 			entity->speed = 2.0f;
 			entity->health = 1;
@@ -643,6 +656,7 @@ void Game::SpawnEntity(Entity *entity, std::string name, int x, int y)
 			entity->rect.setFillColor(sf::Color::Yellow);
 			entity->rect.setPosition(entity->pos);
 			entity->bbox = entity->rect.getGlobalBounds();
+			entity->renderlayer = RL_ENEMIES;
 
 			entity->speed = 2.0f;
 			entity->health = 1;
@@ -1006,93 +1020,39 @@ void Game::Redraw(sf::RenderWindow &window, Entity *entity)
 	window.clear();
 
 	entity = head;
-	// draw stars first, maybe they could have their own list?
-	// or add renderlayer, entities in renderlayer 0 are rendered first, renderlayer 1 rendered second, etc...
-	// then there's no need for this mess in checking the classtypes/health
-	do {
-		if (entity->freed == true || entity == menu.recordentity)
-			continue;
-		if (rendercount > MAX_STARS)
-			continue;
-		if (entity->classtype != "stars")
-			continue;
-		stuff = "sprites/" + entity->texname + ".png";
-		entity->texture.loadFromFile(stuff, sf::IntRect(0 + entity->rendrect.x * (entity->sprframe % 4),
-			0 + entity->rendrect.y * (entity->sprframe / 4),
-			entity->rendrect.x, entity->rendrect.y));
-		entity->spr.setTexture(entity->texture, true);
-		window.draw(entity->spr);
-		rendercount++;
-	} while (entity = entity->next, entity->next->classname != "catworld");
-
-	rendercount = 0;
-	entity = head;
-	// draw other entities than stars
-	do {
-		if (entity->freed == true || entity == menu.recordentity)
-			continue;
-		if (rendercount > MAX_SPRITES)
-			continue;
-		if (entity->classtype == "stars")
-			continue;
-		if ((entity->classtype != "monster" && entity->classtype != "bonus") || entity->health <= 0)
-			continue;
-		if (entity->texname != "") {
-			//if (entity->classname == "megabomb")
-			//    window.draw(entity->rect);
-			stuff = "sprites/" + entity->texname + ".png";
-			entity->texture.loadFromFile(stuff, sf::IntRect(0 + entity->rendrect.x * (entity->sprframe%4), 
-															0 + entity->rendrect.y * (entity->sprframe / 4), 
-															entity->rendrect.x, entity->rendrect.y));
-			//entity->texture.loadFromFile(stuff, sf::IntRect(0, 0, 48, 48));
-			entity->spr.setTexture(entity->texture, true);
-			window.draw(entity->spr);
-		}
-		else
-			window.draw(entity->rect);
-		rendercount++;
-	} while (entity = entity->next, entity->next->classname != "catworld");
-
-	// the last object to be rendered is rendered on top of others
-	// if player is also in the entity list and is the first entity,
-	// it would be necessary to add some Entity *plr here and store player in it
-	// and not render it in the do while, but instead render here
+	// draw the sprites, go through each renderlayer to render stars in the background,
+	// other things on top of them and effects on top of everything
+	for(i = 0; i < RL_RENDERLAYERS; i ++) {
+		rendercount = 0;
+		do {
+			if (entity->freed == true || entity == menu.recordentity)
+				continue;
+			if (rendercount > MAX_STARS && entity->renderlayer == 0)
+				continue;
+			if (rendercount > MAX_SPRITES && entity->renderlayer != 0)
+				continue;
+			if (entity->renderlayer != i)
+				continue;
+			if (entity->texname != "") {
+				stuff = "sprites/" + entity->texname + ".png";
+				entity->texture.loadFromFile(stuff, sf::IntRect(0 + entity->rendrect.x * (entity->sprframe % 4),
+																0 + entity->rendrect.y * (entity->sprframe / 4),
+																entity->rendrect.x, entity->rendrect.y));
+				entity->spr.setTexture(entity->texture, true);
+				window.draw(entity->spr);
+				rendercount++;
+			}
+		} while (entity = entity->next, entity->next->classname != "catworld");
+	}
+	// draw the player
+	// todo: make player part of the entity list to get player rendered in the correct renderlayer
 	stuff = "sprites/" + plr.texname + ".png";
 	plr.texture.loadFromFile(stuff, sf::IntRect(0 + plr.rendrect.x * (plr.sprframe % 4),
 												0 + plr.rendrect.y * (plr.sprframe / 4),
 												plr.rendrect.x, plr.rendrect.y));
 	plr.spr.setTexture(plr.texture);
-	//plr.spr.setColor(sf::Color(0.5f, 1.0f, 0.5f));
 	if(gamestate != GS_MENU)
 		window.draw(plr.spr);
-	//window.draw(plr.rect);
-	// would be nice if explosions rendered over other things
-	rendercount = 0;
-	entity = head;
-	do {
-		if (entity->freed == true || entity == menu.recordentity)
-			continue;
-		if (rendercount > MAX_SPRITES)
-			continue;
-		if (entity->classtype == "stars")
-			continue;
-		if (entity->classtype != "playerbullet" && entity->classtype != "enemybullet" && entity->health > 0)
-			continue;
-		if (entity->texname != "") {
-			//if (entity->classname == "laser")
-			//   window.draw(entity->rect);
-			stuff = "sprites/" + entity->texname + ".png";
-			entity->texture.loadFromFile(stuff, sf::IntRect(0 + entity->rendrect.x * (entity->sprframe % 4),
-				0 + entity->rendrect.y * (entity->sprframe / 4),
-				entity->rendrect.x, entity->rendrect.y));
-			//entity->texture.loadFromFile(stuff, sf::IntRect(0, 0, 48, 48));
-			entity->spr.setTexture(entity->texture, true);
-			window.draw(entity->spr);
-		}
-		else
-			window.draw(entity->rect);
-		rendercount++;
-	} while (entity = entity->next, entity->next->classname != "catworld");
 
 	// hud stuff, render it over everything else
 	if(gamestate != GS_MENU || hud_init == false) {

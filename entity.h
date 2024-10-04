@@ -6,6 +6,14 @@
 // disable these pieces of shit warnings
 #pragma warning (disable : 4244)
 
+typedef enum {
+	RL_STARS,
+	RL_ENEMIES,
+	RL_PLAYER,
+	RL_EFFECTS,
+	RL_RENDERLAYERS,
+} renderlayers_t;
+
 class Entity {
 public:
 	Entity();
