@@ -69,6 +69,8 @@ void Entity::Killed(Entity *entity)
 {
 	anim_time++;
 
+	entity->renderlayer = RL_EFFECTS;
+
 	pos.x += velocity.x;
 	pos.y += velocity.y;
 	rect.setPosition(pos);
